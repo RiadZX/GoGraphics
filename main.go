@@ -24,39 +24,59 @@ func main() {
 	//p0 := Point{0, 100}
 	//p1 := Point{300, 100}
 	var t = 0.0
-	p0 := Point{0, 100}
-	p2 := Point{300, 100}
+	p0 := Point{0, 0}
 	p1 := Point{150, 300}
+	p2 := Point{300, 100}
+	p3 := Point{150, 0}
+	p4 := Point{20, 300}
+
 	for t <= 1.001 {
-		p3 := gc.Lerp(p0, p1, t)
-		p4 := gc.Lerp(p1, p2, t)
-		//p5 := gc.Lerp(p3, p4, t
+
+		p5 := gc.Lerp(gc.Lerp(p0, p1, t), gc.Lerp(p1, p2, t), t)
+		p6 := gc.Lerp(gc.Lerp(p1, p2, t), gc.Lerp(p2, p3, t), t)
+		p7 := gc.Lerp(gc.Lerp(p2, p3, t), gc.Lerp(p3, p4, t), t)
+		p8 := gc.Lerp(gc.Lerp(p3, p4, t), gc.Lerp(p4, p0, t), t)
+		p9 := gc.Lerp(gc.Lerp(p4, p0, t), gc.Lerp(p0, p1, t), t)
+		p10 := gc.Lerp(gc.Lerp(p0, p1, t), gc.Lerp(p1, p2, t), t)
+		p11 := gc.Lerp(gc.Lerp(p1, p2, t), gc.Lerp(p2, p3, t), t)
+		p12 := gc.Lerp(gc.Lerp(p2, p3, t), gc.Lerp(p3, p4, t), t)
+		p13 := gc.Lerp(gc.Lerp(p3, p4, t), gc.Lerp(p4, p0, t), t)
+
+		//draw the curve
+		gc.SetLine(p5, p6)
+		gc.SetLine(p6, p7)
+		gc.SetLine(p7, p8)
+		gc.SetLine(p8, p9)
+		gc.SetLine(p9, p10)
+		gc.SetLine(p10, p11)
+		gc.SetLine(p11, p12)
+		gc.SetLine(p12, p13)
+
 		//use hue to create rainbow effect
 		r, g, b := hueToRGB(t)
 		rgb := color.RGBA{R: uint8(r * 255), G: uint8(g * 255), B: uint8(b * 255), A: 0xff}
 
 		gc.SetStrokeColor(rgb)
-		gc.BeginPath()
-		gc.MoveTo(p3.x, p3.y)
-		gc.LineTo(p4.x, p4.y)
+		gc.SetPoint(p5, 2)
 		gc.Stroke()
 
-		t += 0.05
+		t += 0.01
 	}
 	gc.SetPoint(p2, 1)
 	gc.Close()
 
 	// Save to file
-	draw2dimg.SaveToPngFile("hello.png", dest)
+	draw2dimg.SaveToPngFile("random1.png", dest)
 }
 
+// SetPoint draws a point at the given location
 func (gc *MyGraphicContext) SetPoint(point Point, width float64) {
 	gc.BeginPath()
 	gc.ArcTo(point.x, point.y, width, width, 0, 2*math.Pi)
 	gc.Fill()
 }
 
-//line between two points
+// SetLine draws a line part between two points
 func (gc *MyGraphicContext) SetLine(p0, p1 Point) {
 	//line should be drawn through both points, extending beyond them
 	gc.BeginPath()
@@ -65,6 +85,7 @@ func (gc *MyGraphicContext) SetLine(p0, p1 Point) {
 	gc.Stroke()
 }
 
+// Lerp returns the linear interpolation between two points
 func (gc *MyGraphicContext) Lerp(p0, p1 Point, t float64) Point {
 	return Point{
 		x: p0.x + (p1.x-p0.x)*t,
@@ -72,10 +93,12 @@ func (gc *MyGraphicContext) Lerp(p0, p1 Point, t float64) Point {
 	}
 }
 
+// min3 returns the minimum of three values
 func min3(a, b, c float64) float64 {
 	return math.Min(math.Min(a, b), c)
 }
 
+// hueToRGB converts a hue value to an RGB color
 func hueToRGB(h float64) (float64, float64, float64) {
 	kr := math.Mod(5+h*6, 6)
 	kg := math.Mod(3+h*6, 6)

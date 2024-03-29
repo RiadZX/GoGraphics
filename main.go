@@ -19,17 +19,31 @@ func main() {
 	// Set some properties
 	gc.SetFillColor(color.RGBA{R: 0x44, G: 0xff, B: 0x44, A: 0xff})
 	gc.SetStrokeColor(color.RGBA{R: 0xff, G: 0, B: 0x44, A: 0xff})
-	gc.SetLineWidth(5)
+	gc.SetLineWidth(1)
 
 	//p0 := Point{0, 100}
 	//p1 := Point{300, 100}
-	var t float64 = 0.0
-	for t <= 1.0 {
-		p := gc.Lerp(Point{0, 100}, Point{300, 100}, t)
-		gc.SetPoint(p, 1)
-		t += 0.1
-	}
+	var t = 0.0
+	p0 := Point{0, 100}
+	p2 := Point{300, 100}
+	p1 := Point{150, 300}
+	for t <= 1.001 {
+		p3 := gc.Lerp(p0, p1, t)
+		p4 := gc.Lerp(p1, p2, t)
+		//p5 := gc.Lerp(p3, p4, t
+		//use hue to create rainbow effect
+		r, g, b := hueToRGB(t)
+		rgb := color.RGBA{R: uint8(r * 255), G: uint8(g * 255), B: uint8(b * 255), A: 0xff}
 
+		gc.SetStrokeColor(rgb)
+		gc.BeginPath()
+		gc.MoveTo(p3.x, p3.y)
+		gc.LineTo(p4.x, p4.y)
+		gc.Stroke()
+
+		t += 0.05
+	}
+	gc.SetPoint(p2, 1)
 	gc.Close()
 
 	// Save to file
@@ -56,6 +70,22 @@ func (gc *MyGraphicContext) Lerp(p0, p1 Point, t float64) Point {
 		x: p0.x + (p1.x-p0.x)*t,
 		y: p0.y + (p1.y-p0.y)*t,
 	}
+}
+
+func min3(a, b, c float64) float64 {
+	return math.Min(math.Min(a, b), c)
+}
+
+func hueToRGB(h float64) (float64, float64, float64) {
+	kr := math.Mod(5+h*6, 6)
+	kg := math.Mod(3+h*6, 6)
+	kb := math.Mod(1+h*6, 6)
+
+	r := 1 - math.Max(min3(kr, 4-kr, 1), 0)
+	g := 1 - math.Max(min3(kg, 4-kg, 1), 0)
+	b := 1 - math.Max(min3(kb, 4-kb, 1), 0)
+
+	return r, g, b
 }
 
 type Point struct {

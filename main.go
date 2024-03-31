@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"math/rand"
 )
 
 type MyGraphicContext struct {
@@ -18,53 +19,36 @@ func main() {
 
 	// Set some properties
 	gc.SetFillColor(color.RGBA{R: 0x44, G: 0xff, B: 0x44, A: 0xff})
+	gc.SetBackgroundColor(color.RGBA{R: 0x00, G: 0x00, B: 0x00, A: 0xff})
 	gc.SetStrokeColor(color.RGBA{R: 0xff, G: 0, B: 0x44, A: 0xff})
-	gc.SetLineWidth(1)
-
+	gc.SetLineWidth(5)
+	gc.DrawBorder(300, 300)
 	//p0 := Point{0, 100}
 	//p1 := Point{300, 100}
-	var t = 0.0
-	p0 := Point{0, 0}
-	p1 := Point{150, 300}
-	p2 := Point{300, 100}
-	p3 := Point{150, 0}
-	p4 := Point{20, 300}
-
-	for t <= 1.001 {
-
-		p5 := gc.Lerp(gc.Lerp(p0, p1, t), gc.Lerp(p1, p2, t), t)
-		p6 := gc.Lerp(gc.Lerp(p1, p2, t), gc.Lerp(p2, p3, t), t)
-		p7 := gc.Lerp(gc.Lerp(p2, p3, t), gc.Lerp(p3, p4, t), t)
-		p8 := gc.Lerp(gc.Lerp(p3, p4, t), gc.Lerp(p4, p0, t), t)
-		p9 := gc.Lerp(gc.Lerp(p4, p0, t), gc.Lerp(p0, p1, t), t)
-		p10 := gc.Lerp(gc.Lerp(p0, p1, t), gc.Lerp(p1, p2, t), t)
-		p11 := gc.Lerp(gc.Lerp(p1, p2, t), gc.Lerp(p2, p3, t), t)
-		p12 := gc.Lerp(gc.Lerp(p2, p3, t), gc.Lerp(p3, p4, t), t)
-		p13 := gc.Lerp(gc.Lerp(p3, p4, t), gc.Lerp(p4, p0, t), t)
-
-		//draw the curve
-		gc.SetLine(p5, p6)
-		gc.SetLine(p6, p7)
-		gc.SetLine(p7, p8)
-		gc.SetLine(p8, p9)
-		gc.SetLine(p9, p10)
-		gc.SetLine(p10, p11)
-		gc.SetLine(p11, p12)
-		gc.SetLine(p12, p13)
-
-		//use hue to create rainbow effect
-		r, g, b := hueToRGB(t)
-		rgb := color.RGBA{R: uint8(r * 255), G: uint8(g * 255), B: uint8(b * 255), A: 0xff}
-
-		gc.SetStrokeColor(rgb)
-		gc.SetPoint(p5, 2)
-		gc.Stroke()
-
-		t += 0.01
-	}
-	gc.SetPoint(p2, 1)
-	gc.Close()
-
+	gc.RandomImage(100)
+	//var t = 0.0
+	//p0 := Point{0, 0}
+	//p1 := Point{0, 300}
+	//p2 := Point{500, 300}
+	//p3 := Point{150, 0}
+	//
+	//gc.SetPoint(p0, 5)
+	//gc.SetPoint(p1, 5)
+	//gc.SetPoint(p2, 5)
+	//gc.SetPoint(p3, 5)
+	//
+	//for t <= 1.001 {
+	//	//use hue to create rainbow effect
+	//	r, g, b := hueToRGB(t)
+	//	rgb := color.RGBA{R: uint8(r * 255), G: uint8(g * 255), B: uint8(b * 255), A: 0xff}
+	//	//draw the bezier curve
+	//	point := gc.BezierCurve4(p0, p1, p2, p3, t)
+	//	gc.SetPoint(point, 2)
+	//	gc.SetFillColor(rgb)
+	//
+	//	t += 0.001
+	//}
+	//gc.Close()
 	// Save to file
 	draw2dimg.SaveToPngFile("random1.png", dest)
 }
@@ -93,6 +77,14 @@ func (gc *MyGraphicContext) Lerp(p0, p1 Point, t float64) Point {
 	}
 }
 
+func (gc *MyGraphicContext) BezierCurve3(p0, p1, p2 Point, t float64) Point {
+	return gc.Lerp(gc.Lerp(p0, p1, t), gc.Lerp(p1, p2, t), t)
+}
+
+func (gc *MyGraphicContext) BezierCurve4(p0, p1, p2, p3 Point, t float64) Point {
+	return gc.Lerp(gc.BezierCurve3(p0, p1, p2, t), gc.BezierCurve3(p1, p2, p3, t), t)
+}
+
 // min3 returns the minimum of three values
 func min3(a, b, c float64) float64 {
 	return math.Min(math.Min(a, b), c)
@@ -113,4 +105,61 @@ func hueToRGB(h float64) (float64, float64, float64) {
 
 type Point struct {
 	x, y float64
+}
+
+func (gc *MyGraphicContext) SetBackgroundColor(color color.Color) {
+	//draw a rectangle with the background color full size
+	gc.SetFillColor(color)
+	gc.MoveTo(0, 0)
+	gc.LineTo(800, 0)
+	gc.LineTo(800, 800)
+	gc.LineTo(0, 800)
+	gc.Close()
+	gc.Fill()
+}
+
+func (gc *MyGraphicContext) DrawBorder(width, height float64) {
+	gc.BeginPath()
+	gc.MoveTo(0, 0)
+	gc.LineTo(width, 0)
+	gc.LineTo(width, height)
+	gc.LineTo(0, height)
+	gc.Close()
+	gc.Stroke()
+
+}
+
+func (gc *MyGraphicContext) RandomImage(amountOfPoints int) {
+	//for i := 0; i < amountOfPoints; i++ {
+	//	gc.SetPoint(Point{rand.Float64() * 400, rand.Float64() * 400}, 3)
+	//}
+	t := 0.0
+	//each 4 points define a bezier curve
+	for i := 0; i < amountOfPoints; i += 4 {
+		p0 := Point{rand.Float64() * 400, rand.Float64() * 400}
+		p1 := Point{rand.Float64() * 400, rand.Float64() * 400}
+		p2 := Point{rand.Float64() * 400, rand.Float64() * 400}
+		p3 := Point{rand.Float64() * 400, rand.Float64() * 400}
+
+		gc.SetPoint(p0, 0)
+		gc.SetPoint(p1, 0)
+		gc.SetPoint(p2, 0)
+		gc.SetPoint(p3, 0)
+
+		for t <= 1.001 {
+			//use hue to create rainbow effect
+			r, g, b := hueToRGB(t)
+			rgb := color.RGBA{R: uint8(r * 255), G: uint8(g * 255), B: uint8(b * 255), A: 0xff}
+			//draw the bezier curve
+			point := gc.BezierCurve4(p0, p1, p2, p3, t)
+			gc.SetPoint(point, 2)
+			gc.SetFillColor(rgb)
+
+			t += 0.001
+		}
+		t = 0.0
+	}
+
+	gc.Close()
+
 }

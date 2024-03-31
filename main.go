@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/llgcode/draw2d/draw2dimg"
 	"image"
 	"image/color"
@@ -14,43 +15,31 @@ type MyGraphicContext struct {
 
 func main() {
 	// Initialize the graphic context on an RGBA image
-	dest := image.NewRGBA(image.Rect(0, 0, 300, 300))
-	gc := MyGraphicContext{draw2dimg.NewGraphicContext(dest)}
+	i := 0.0
+	frame := 0
+	for i <= math.Pi*2 {
+		fmt.Println("saved")
+		dest := image.NewRGBA(image.Rect(0, 0, 400, 300))
+		err := draw2dimg.SaveToPngFile(fmt.Sprintf("./images/frame%d.png", frame), SimpleRope(dest, i))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		i += 0.1
+		frame++
+	}
 
-	// Set some properties
-	gc.SetFillColor(color.RGBA{R: 0x44, G: 0xff, B: 0x44, A: 0xff})
-	gc.SetBackgroundColor(color.RGBA{R: 0x00, G: 0x00, B: 0x00, A: 0xff})
-	gc.SetStrokeColor(color.RGBA{R: 0xff, G: 0, B: 0x44, A: 0xff})
-	gc.SetLineWidth(5)
-	gc.DrawBorder(300, 300)
-	//p0 := Point{0, 100}
-	//p1 := Point{300, 100}
-	gc.RandomImage(100)
-	//var t = 0.0
-	//p0 := Point{0, 0}
-	//p1 := Point{0, 300}
-	//p2 := Point{500, 300}
-	//p3 := Point{150, 0}
-	//
-	//gc.SetPoint(p0, 5)
-	//gc.SetPoint(p1, 5)
-	//gc.SetPoint(p2, 5)
-	//gc.SetPoint(p3, 5)
-	//
-	//for t <= 1.001 {
-	//	//use hue to create rainbow effect
-	//	r, g, b := hueToRGB(t)
-	//	rgb := color.RGBA{R: uint8(r * 255), G: uint8(g * 255), B: uint8(b * 255), A: 0xff}
-	//	//draw the bezier curve
-	//	point := gc.BezierCurve4(p0, p1, p2, p3, t)
-	//	gc.SetPoint(point, 2)
-	//	gc.SetFillColor(rgb)
-	//
-	//	t += 0.001
-	//}
-	//gc.Close()
-	// Save to file
-	draw2dimg.SaveToPngFile("random1.png", dest)
+	directory := "./images"
+	gifFilename := "output.gif"
+
+	err := ImagesToGif(directory, gifFilename)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	fmt.Println("GIF generated successfully!")
+
 }
 
 // SetPoint draws a point at the given location
@@ -130,9 +119,6 @@ func (gc *MyGraphicContext) DrawBorder(width, height float64) {
 }
 
 func (gc *MyGraphicContext) RandomImage(amountOfPoints int) {
-	//for i := 0; i < amountOfPoints; i++ {
-	//	gc.SetPoint(Point{rand.Float64() * 400, rand.Float64() * 400}, 3)
-	//}
 	t := 0.0
 	//each 4 points define a bezier curve
 	for i := 0; i < amountOfPoints; i += 4 {
@@ -159,7 +145,5 @@ func (gc *MyGraphicContext) RandomImage(amountOfPoints int) {
 		}
 		t = 0.0
 	}
-
 	gc.Close()
-
 }
